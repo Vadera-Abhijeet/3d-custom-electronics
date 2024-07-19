@@ -1,6 +1,6 @@
 import { Canvas, useThree } from "@react-three/fiber";
 import Lamp from "./Lamp";
-import { ContactShadows, Float, OrbitControls } from "@react-three/drei";
+import { ContactShadows, Float, Html, OrbitControls, useProgress } from "@react-three/drei";
 import { ChromePicker, ColorResult } from "react-color";
 import { useMemo, useState } from "react";
 import * as THREE from "three";
@@ -24,11 +24,11 @@ function Controls() {
 
 const options = [
   { value: "toggle", label: "Toggle" },
-  // { value: "lamp", label: "Lamp" },
+  { value: "lamp", label: "Lamp" },
   // { value: "bulb", label: "Bulb" },
   // { value: "waterManholeCover", label: "Water Manhole Cover" },
   // { value: "tree", label: "Tree" },
-  // { value: "karken", label: "Karken" },
+  { value: "karken", label: "Karken" },
   // { value: "car", label: "Car" },
   // { value: "saske", label: "Saske" },
 ];
@@ -99,10 +99,26 @@ function createPatternTexture(text: string) {
   return new THREE.CanvasTexture(canvas);
 }
 
+const Loader = ({ progress }) => {
+  if(progress === 100) return null
+  return (
+    <div className="loader-container">
+      <div className="loader">
+        <div className="spinner"></div>
+        <div className="progress-text">
+          Loading... {Math.round(progress)}%
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [glassColor, setGlassColor] = useState("#ffffff");
   const [selectedOption, setSelectedOption] = useState(options[0]);
   const [text, setText] = useState("");
+
+  const { progress } = useProgress();
 
   const textureOptions = useMemo(() => {
     return [
@@ -161,6 +177,7 @@ export default function App() {
   return (
     <div className="wrapper">
       <div className="configurator">
+      <h3>Select Model:</h3>
         <Select
           value={selectedOption}
           onChange={setSelectedOption}
@@ -187,21 +204,24 @@ export default function App() {
           </>
         )}
         <div>
-          <p>Color</p>
+        <h3>Select Color:</h3>
           <ChromePicker color={glassColor} onChange={handleGlassColorChange} />
         </div>
       </div>
-      <Canvas style={{ height: "100vh", width: "70%" }}>
-        <ambientLight />
-        <pointLight position={[-3, -2, 3]} intensity={150} />
-        {/* <pointLight position={[-3, -3, 2]} /> */}
-        <Controls />
+      <div style={{ width: "70%", position: "relative" }}>
+        <Loader progress={progress} />
+        <Canvas style={{ height: "100vh", width: "100%" }}>
+          <ambientLight />
+          <pointLight position={[-3, -2, 3]} intensity={150} />
+          {/* <pointLight position={[-3, -3, 2]} /> */}
+          <Controls />
 
-        {dataMapper[selectedOption.value]}
-        {/* <Float speed={1.4} rotationIntensity={1.5} floatIntensity={2.3}>
+          {dataMapper[selectedOption.value]}
+          {/* <Float speed={1.4} rotationIntensity={1.5} floatIntensity={2.3}>
         </Float> */}
-        <ContactShadows position={[0, -2.5, 0]} blur={3} scale={30} far={5} />
-      </Canvas>
+          <ContactShadows position={[0, -2.5, 0]} blur={3} scale={30} far={5} />
+        </Canvas>
+      </div>
     </div>
   );
 }

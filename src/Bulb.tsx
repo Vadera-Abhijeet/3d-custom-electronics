@@ -18,7 +18,6 @@ export function Bulb({
   bulbTexture,
   ...props
 }: JSX.IntrinsicElements["group"]) {
-  console.log(" bulbTexture:", bulbTexture);
   const { nodes, materials } = useGLTF(
     "/bulb/lightbulb_led_4k.gltf"
   ) as GLTFResult;

@@ -1,8 +1,7 @@
 import { Canvas, useThree } from "@react-three/fiber";
 import Lamp from "./Lamp";
-import { ContactShadows, Float, Html, OrbitControls, useProgress } from "@react-three/drei";
-import { ChromePicker, ColorResult } from "react-color";
-import { useMemo, useState } from "react";
+import { ContactShadows, OrbitControls, useProgress } from "@react-three/drei";
+import { Suspense, useMemo, useState } from "react";
 import * as THREE from "three";
 import Select from "react-select";
 import { Bulb } from "./Bulb";
@@ -28,7 +27,7 @@ const options = [
   // { value: "bulb", label: "Bulb" },
   // { value: "waterManholeCover", label: "Water Manhole Cover" },
   // { value: "tree", label: "Tree" },
-  { value: "karken", label: "Karken" },
+  // { value: "karken", label: "Karken" },
   // { value: "car", label: "Car" },
   // { value: "saske", label: "Saske" },
 ];
@@ -100,99 +99,86 @@ function createPatternTexture(text: string) {
 }
 
 const Loader = ({ progress }) => {
-  if(progress === 100) return null
+  if (progress === 100) return null;
   return (
     <div className="loader-container">
       <div className="loader">
         <div className="spinner"></div>
-        <div className="progress-text">
-          Loading... {Math.round(progress)}%
-        </div>
+        <div className="progress-text">Loading... {Math.round(progress)}%</div>
       </div>
     </div>
   );
 };
 
+const colors = [
+  { color: "#E7C780", texturePath: "/Toggle/textures/6.png" },
+  { color: "#A78251", texturePath: "/Toggle/textures/2.png" },
+  { color: "#896838", texturePath: "/Toggle/textures/3.png" },
+  { color: "#665232", texturePath: "/Toggle/textures/4.png" },
+  { color: "#332314", texturePath: "/Toggle/textures/5.png" },
+];
+
 export default function App() {
-  const [glassColor, setGlassColor] = useState("#ffffff");
+  const [glassColor, setGlassColor] = useState(colors[0].color);
+  const [selectedColor, setSelectedColor] = useState(colors[0]);
   const [selectedOption, setSelectedOption] = useState(options[0]);
   const [text, setText] = useState("");
 
   const { progress } = useProgress();
 
-  const textureOptions = useMemo(() => {
-    return [
-      {
-        label: "Solid Color (Yellow)",
-        value: "yellow",
-        texture: createSolidColorTexture("#ffcc00"),
-      },
-      {
-        label: "Gradient (Yellow to Orange)",
-        value: "gradient",
-        texture: createGradientTexture("#ffcc00", "#ff5500"),
-      },
-      {
-        label: "Pattern",
-        value: "pattern",
-        texture: createPatternTexture(text),
-      },
-      // Add more texture options as needed
-    ];
-  }, [text]);
-  const [selectedTexture, setSelectedTexture] = useState(textureOptions[0]); // Default texture
-
   const dataMapper = useMemo(() => {
     return {
-      toggle: <Toggle position={[0, 0, 0]} scale={20} color={glassColor} />,
+      toggle: (
+        <Toggle
+          position={[0, 0, 0]}
+          scale={20}
+          color={glassColor}
+          texturePath={selectedColor.texturePath}
+        />
+      ),
       lamp: <Lamp position={[0, -1, 0]} glassColor={glassColor} />,
-      bulb: (
-        <Bulb
-          scale={30}
-          position={[0, -0.5, 0]}
-          bulbColor={glassColor}
-          bulbTexture={selectedTexture.texture}
-        />
-      ),
-      waterManholeCover: (
-        <WaterManholeCover
-          scale={5}
-          position={[0, -0.5, 0]}
-          bulbColor={glassColor}
-        />
-      ),
-      tree: <Tree position={[0, -2.5, 0]} bulbColor={glassColor} />,
-      karken: (
-        <Karken scale={0.1} position={[0, -0.7, 0]} logoColor={glassColor} />
-      ),
-      car: <Car position={[0, -0.5, 0]} logoColor={glassColor} />,
-      saske: <Saske />,
+      // bulb: (
+      //   <Bulb
+      //     scale={30}
+      //     position={[0, -0.5, 0]}
+      //     bulbColor={glassColor}
+      //     bulbTexture={selectedTexture.texture}
+      //   />
+      // ),
+      // waterManholeCover: (
+      //   <WaterManholeCover
+      //     scale={5}
+      //     position={[0, -0.5, 0]}
+      //     bulbColor={glassColor}
+      //   />
+      // ),
+      // tree: <Tree position={[0, -2.5, 0]} bulbColor={glassColor} />,
+      // karken: (
+      //   <Karken scale={0.1} position={[0, -0.7, 0]} logoColor={glassColor} />
+      // ),
+      // car: <Car position={[0, -0.5, 0]} logoColor={glassColor} />,
+      // saske: <Saske />,
     };
-  }, [glassColor, selectedTexture]);
+  }, [glassColor, selectedColor]);
 
-  const handleGlassColorChange = (color: ColorResult) => {
-    setGlassColor(color.hex);
-  };
+  // const handleGlassColorChange = (color: ColorResult) => {
+  //   setGlassColor(color.hex);
+  // };
 
   return (
     <div className="wrapper">
       <div className="configurator">
-      <h3>Select Model:</h3>
+        <h1>Configurator </h1>
+        <hr />
+        <h3>Select Model:</h3>
         <Select
           value={selectedOption}
           onChange={setSelectedOption}
           options={options}
         />
 
-        {selectedOption.value === "bulb" && (
+        {/* {selectedOption.value === "bulb" && (
           <>
-            <h3>Select Texture:</h3>
-            <Select
-              value={selectedTexture}
-              options={textureOptions}
-              onChange={setSelectedTexture}
-            />
-            <br />
             <label htmlFor="text-input">Text on Bulb:</label>
             <br />
             <input
@@ -202,24 +188,53 @@ export default function App() {
               onChange={({ target }) => setText(target.value)}
             />
           </>
-        )}
+        )} */}
         <div>
-        <h3>Select Color:</h3>
-          <ChromePicker color={glassColor} onChange={handleGlassColorChange} />
+          <h3>Select Color:</h3>
+          <div className="color-btn-wrapper">
+            {colors.map((color, index) => {
+              return (
+                <button
+                  key={index}
+                  className={`color-btn${
+                    glassColor === color.color ? "-active" : ""
+                  }`}
+                  style={{ backgroundColor: color.color }}
+                  onClick={() => {
+                    setGlassColor(color.color);
+                    setSelectedColor(color);
+                  }}
+                ></button>
+              );
+            })}
+          </div>
+          {/* <ChromePicker color={glassColor} onChange={handleGlassColorChange} /> */}
         </div>
       </div>
       <div style={{ width: "70%", position: "relative" }}>
         <Loader progress={progress} />
         <Canvas style={{ height: "100vh", width: "100%" }}>
-          <ambientLight />
-          <pointLight position={[-3, -2, 3]} intensity={150} />
-          {/* <pointLight position={[-3, -3, 2]} /> */}
-          <Controls />
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[5, 5, 5]} intensity={4} />
+          <directionalLight position={[-5, 5, 5]} intensity={4} />
+          <directionalLight position={[5, -5, 5]} intensity={4} />
+          <directionalLight position={[-5, -5, 5]} intensity={4} />
+          <directionalLight position={[5, 5, -5]} intensity={4} />
+          <directionalLight position={[-5, 5, -5]} intensity={4} />
+          <pointLight position={[0, 0, 0]} intensity={0.5} />
+          <hemisphereLight
+            skyColor={"white"}
+            groundColor={"black"}
+            intensity={0.5}
+          />
 
-          {dataMapper[selectedOption.value]}
+          <Suspense fallback={null}>
+            {dataMapper[selectedOption.value]}
+          </Suspense>
+          <OrbitControls />
           {/* <Float speed={1.4} rotationIntensity={1.5} floatIntensity={2.3}>
         </Float> */}
-          <ContactShadows position={[0, -2.5, 0]} blur={3} scale={30} far={5} />
+          <ContactShadows position={[0, -2.5, 0]} blur={3} scale={10} far={5} />
         </Canvas>
       </div>
     </div>

@@ -4,7 +4,7 @@ Command: npx gltfjsx@6.4.1 ./public/Toggle/Toggle.gltf -t -r ./public
 */
 
 import * as THREE from "three";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useGLTF } from "@react-three/drei";
 import { GLTF } from "three-stdlib";
 import { GLTFAction } from "./interface";
@@ -1271,8 +1271,34 @@ type GLTFResult = GLTF & {
   animations: GLTFAction[];
 };
 
-export function Toggle({ color, ...props }: JSX.IntrinsicElements["group"]) {
+export function Toggle({
+  texturePath,
+  color,
+  ...props
+}: JSX.IntrinsicElements["group"]) {
   const { nodes, materials } = useGLTF("/Toggle/Toggle.gltf") as GLTFResult;
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    const loader = new THREE.TextureLoader();
+    loader.load(texturePath, (loadedTexture) => {
+      setTexture(loadedTexture);
+    });
+  }, [texturePath]);
+
+  useEffect(() => {
+    Object.keys(nodes).forEach((key) => {
+      if (key.startsWith("SOLID") && nodes[key].material) {
+        const material = nodes[key].material as THREE.MeshStandardMaterial;
+        if (texture) {
+          material.map = texture;
+        } else {
+          material.color = new THREE.Color(color);
+        }
+        material.needsUpdate = true;
+      }
+    });
+  }, [color, nodes, texture]);
 
   useEffect(() => {
     Object.keys(nodes).forEach((key) => {
